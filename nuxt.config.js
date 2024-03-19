@@ -22,14 +22,6 @@ export default {
     ]
   },
 
-  // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [
-  ],
-
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
-  ],
-
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 
@@ -65,15 +57,41 @@ export default {
     }
   },
 
-  // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {
+  pwa: {
+    workbox: {
+      offline: false,
+      dev: true, // 開発環境でもPWA機能を有効に
+      // Workboxのデフォルト設定を上書き
+      // オフライン時のナビゲーションリクエストをキャッチして/testページを返す
+      runtimeCaching: [
+        {
+          urlPattern: '.*', // すべてのリクエストにマッチ
+          handler: 'CacheFirst', // オフライン時はキャッシュを優先して使用
+          method: 'GET', // GETリクエストのみを対象
+          strategyOptions: {
+            cacheName: 'nuxt2-pwa-cache', // キャッシュストレージの名前
+            cacheableResponse: { statuses: [0, 200] }, // キャッシュ可能なレスポンスステータス
+          },
+          strategyPlugins: [{
+            use: 'Expiration',
+            config: {
+              maxEntries: 50, // 最大エントリ数
+              maxAgeSeconds: 30 * 24 * 60 * 60, // キャッシュの最大期間（30日）
+            },
+          }],
+        },
+        {
+          urlPattern: 'http://localhost:3000/test',
+          handler: 'CacheFirst', // オフライン時はキャッシュを優先して使用
+          strategyOptions: {
+            cacheName: 'offlinePage',
+            cacheableResponse: { statuses: [0, 200] },
+          },
+        },
+        // 他のキャッシュ設定...
+      ],
+      // 他のPWA設定...
+    },
   },
-  workbox: {
-    dev: true
-  }
-  // pwa: {
-  //   workbox: {
-  //     dev: true,
-  //   }
-  // },
+
 }
